@@ -346,22 +346,37 @@ ifeq (true,$(OPENJ9_ENABLE_CMAKE))
   ifeq (windows,$(OPENJDK_TARGET_OS))
     CMAKE_ARGS += -DCMAKE_TOOLCHAIN_FILE="$(OUTPUTDIR)/toolchain-win.cmake"
   else
-    # We grab the C/C++ compilers detected by autoconf or provided by user, not
-    # the CC/CXX variables defined by the makefiles, which potentially include
-    # the ccache command which will throw off cmake.
-    ifneq (,$(OPENJ9_CC))
-      CMAKE_ARGS += -DCMAKE_C_COMPILER="$(OPENJ9_CC)"
+    ifneq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
+
+      ifndef SYSROOT
+        ifndef SYSROOT_CFLAGS
+          $(error "SYSROOT nor SYSROOT_CFLAGS defined")
+        endif
+        SYSROOT=$(shell echo $(SYSROOT_CFLAGS) | sed -e 's/.*--sysroot=//g')
+      endif
+
+      CMAKE_ARGS += \
+        -DCMAKE_TOOLCHAIN_FILE=$(OPENJ9OMR_TOPDIR)/cmake/toolchains/$(OPENJDK_TARGET_CPU)-$(OPENJDK_TARGET_OS)-cross.cmake \
+        -DCMAKE_FIND_ROOT_PATH=$(SYSROOT) \
+        -DOMR_EXE_LAUNCHER="qemu-$(OPENJDK_TARGET_CPU)-static;-L;$(SYSROOT)"
     else
-      CMAKE_ARGS += -DCMAKE_C_COMPILER="$(ac_cv_prog_CC)"
-    endif
-    ifneq (,$(OPENJ9_CXX))
-      CMAKE_ARGS += -DCMAKE_CXX_COMPILER="$(OPENJ9_CXX)"
-    else
-      CMAKE_ARGS += -DCMAKE_CXX_COMPILER="$(ac_cv_prog_CXX)"
-    endif
-    ifneq (,$(NASM))
-      CMAKE_ARGS += -DCMAKE_ASM_NASM_COMPILER="$(NASM)"
-    endif
+      # We grab the C/C++ compilers detected by autoconf or provided by user, not
+      # the CC/CXX variables defined by the makefiles, which potentially include
+      # the ccache command which will throw off cmake.
+      ifneq (,$(OPENJ9_CC))
+        CMAKE_ARGS += -DCMAKE_C_COMPILER="$(OPENJ9_CC)"
+      else
+        CMAKE_ARGS += -DCMAKE_C_COMPILER="$(ac_cv_prog_CC)"
+      endif
+      ifneq (,$(OPENJ9_CXX))
+        CMAKE_ARGS += -DCMAKE_CXX_COMPILER="$(OPENJ9_CXX)"
+      else
+        CMAKE_ARGS += -DCMAKE_CXX_COMPILER="$(ac_cv_prog_CXX)"
+      endif
+      ifneq (,$(NASM))
+        CMAKE_ARGS += -DCMAKE_ASM_NASM_COMPILER="$(NASM)"
+      endif
+    endif # neq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
   endif # windows
 
   ifneq (,$(CCACHE))
