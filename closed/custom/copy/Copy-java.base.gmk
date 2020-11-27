@@ -57,7 +57,7 @@ $(call openj9_copy_files_and_debuginfos, \
 		$(addprefix $(LIB_DST_DIR), / /j9vm/ /server/)))
 
 # CPU targets without JIT support.
-NO_JIT_CPUS := riscv64
+NO_JIT_CPUS := 
 
 $(call openj9_copy_shlibs, \
 	$(if $(filter zos,$(OPENJDK_TARGET_OS)),j9a2e) \
