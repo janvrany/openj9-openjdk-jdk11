@@ -358,7 +358,8 @@ ifeq (true,$(OPENJ9_ENABLE_CMAKE))
       CMAKE_ARGS += \
         -DCMAKE_TOOLCHAIN_FILE=$(OPENJ9OMR_TOPDIR)/cmake/toolchains/$(OPENJDK_TARGET_CPU)-$(OPENJDK_TARGET_OS)-cross.cmake \
         -DCMAKE_FIND_ROOT_PATH=$(SYSROOT) \
-        -DOMR_EXE_LAUNCHER="qemu-$(OPENJDK_TARGET_CPU)-static;-L;$(SYSROOT)"
+        -DOMR_EXE_LAUNCHER="qemu-$(OPENJDK_TARGET_CPU)-static;-L;$(SYSROOT)" \
+	-DCMAKE_BUILD_TYPE=Debug
     else
       # We grab the C/C++ compilers detected by autoconf or provided by user, not
       # the CC/CXX variables defined by the makefiles, which potentially include
